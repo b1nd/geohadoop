@@ -11,7 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.b1nd.namenode.services.FileService;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,8 +28,7 @@ public class FileController {
 
     @PostMapping("/upload")
     public @ResponseBody
-    ResponseEntity<?> uploadFile(@RequestParam("file") List<MultipartFile> uploadFiles,
-                                 @RequestParam(name = "dir", required = false) String dirName) {
+    ResponseEntity<?> uploadFile(@RequestParam("file") List<MultipartFile> uploadFiles) {
         String uploadedFileNames = uploadFiles.stream()
                 .map(MultipartFile::getOriginalFilename)
                 .filter(s -> s != null && !s.isEmpty())
@@ -40,7 +38,7 @@ public class FileController {
             return new ResponseEntity<>("please select a file!", HttpStatus.BAD_REQUEST);
         }
         try {
-            fileService.saveUploadedFiles(uploadFiles, dirName);
+            fileService.saveUploadedFiles(uploadFiles);
         } catch (IOException e) {
             logger.error("File could not be saved", e);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -51,23 +49,15 @@ public class FileController {
                 uploadedFileNames, HttpStatus.OK);
     }
 
-    @PostMapping("/split")
-    public @ResponseBody
-    ResponseEntity<?> splitTiffFile(@RequestParam("filename") String fileName) {
-        fileService.splitTiffFile(fileName);
-
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
     @GetMapping("/all")
     public @ResponseBody
-    List<String> getFileNames(@RequestParam(name = "dir", required = false) String dirName) {
+    List<String> getFileNames() {
         try {
-            return fileService.getFileNames(dirName);
+            return fileService.getFileNames();
         } catch (IOException e) {
-            logger.error("Can't get files in dir " + dirName, e);
+            logger.error("Can't get file names", e);
         }
-        return Collections.emptyList();
+        return null;
     }
 
 }
