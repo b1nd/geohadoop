@@ -46,6 +46,7 @@ public class FileService {
                 String ext = getFileExtension(newFileName);
 
                 Files.write(newFile.toPath(), bytes);
+                logger.info("File " + newFileName + " saved");
 
                 if (ext.equals("tif") || ext.equals("tiff")) {
                     splitTifFile(newFileName);

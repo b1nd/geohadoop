@@ -12,7 +12,6 @@ import ru.b1nd.namenode.services.FileService;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/api/file")
@@ -29,12 +28,7 @@ public class FileController {
     @PostMapping("/upload")
     public @ResponseBody
     ResponseEntity<?> uploadFile(@RequestParam("file") List<MultipartFile> uploadFiles) {
-        String uploadedFileNames = uploadFiles.stream()
-                .map(MultipartFile::getOriginalFilename)
-                .filter(s -> s != null && !s.isEmpty())
-                .collect(Collectors.joining(", "));
-
-        if (uploadedFileNames.isEmpty()) {
+        if (uploadFiles.isEmpty()) {
             return new ResponseEntity<>("please select a file!", HttpStatus.BAD_REQUEST);
         }
         try {
@@ -43,10 +37,8 @@ public class FileController {
             logger.error("File could not be saved", e);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        logger.info("File " + uploadedFileNames + " uploaded");
 
-        return new ResponseEntity<>("Successfully uploaded - " +
-                uploadedFileNames, HttpStatus.OK);
+        return new ResponseEntity<>("Successfully uploaded", HttpStatus.OK);
     }
 
     @GetMapping("/all")
