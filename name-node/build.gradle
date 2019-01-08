@@ -28,6 +28,8 @@ dependencies {
 	testImplementation('org.springframework.boot:spring-boot-starter-test')
 
 	compile 'org.springframework.boot:spring-boot-starter-web'
-	compile 'com.google.guava:guava:27.0.1-jre'
 	compile 'org.springframework.boot:spring-boot-starter-data-jpa'
+	compile 'org.springframework.boot:spring-boot-starter-amqp'
+	compile 'org.postgresql:postgresql'
+	compile 'com.google.guava:guava:27.0.1-jre'
 }
