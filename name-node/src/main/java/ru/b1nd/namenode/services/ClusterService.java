@@ -16,16 +16,21 @@ public class ClusterService {
     private final Logger logger = LoggerFactory.getLogger(ClusterService.class);
 
     private final NodeRepository nodeRepository;
+    private final RabbitService rabbitService;
 
     @Autowired
-    public ClusterService(NodeRepository nodeRepository) {
+    public ClusterService(NodeRepository nodeRepository, RabbitService rabbitService) {
         this.nodeRepository = nodeRepository;
+        this.rabbitService = rabbitService;
     }
 
     public boolean addNode(String host, String port) {
+        Node node = new Node(host, port);
         // TODO: implement. Check node heart beat, then add.
+        rabbitService.addNodeQueue(node);
+        nodeRepository.save(node);
+
         logger.info("Node added, host: " + host + ", port: " + port);
-        nodeRepository.save(new Node(host, port));
         return false;
     }
 
@@ -34,7 +39,9 @@ public class ClusterService {
         if (node == null) {
             return false;
         } else {
+            rabbitService.deleteNodeQueue(node);
             nodeRepository.delete(node);
+
             logger.info(node + " deleted");
             return true;
         }
@@ -48,6 +55,7 @@ public class ClusterService {
     public List<Node> getNodes() {
         synchronizeNodes();
         Iterable<Node> nodes = nodeRepository.findAll();
+
         return Lists.newArrayList(nodes);
     }
 }

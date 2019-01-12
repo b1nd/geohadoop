@@ -11,12 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import ru.b1nd.namenode.domain.Node;
 import ru.b1nd.namenode.services.ClusterService;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static ru.b1nd.namenode.utils.Converter.getQueueNameByNode;
 
 @EnableRabbit
 @Configuration
@@ -30,24 +33,27 @@ public class RabbitConfiguration {
     private final ClusterService clusterService;
 
     @Autowired
-    public RabbitConfiguration(ClusterService clusterService) {
+    public RabbitConfiguration(@Lazy ClusterService clusterService) {
         this.clusterService = clusterService;
     }
 
     @Bean
-    public List<Declarable> directBindings() {
+    public DirectExchange directExchange() {
+        return new DirectExchange(exchangeName);
+    }
+
+    @Bean
+    public List<Declarable> directBindings(DirectExchange directExchange) {
         List<Node> nodes = clusterService.getNodes();
         List<Queue> queues = nodes.stream()
-                .map(n -> new Queue(n.getHost() + ":" + n.getPort()))
+                .map(n -> new Queue(getQueueNameByNode(n)))
                 .collect(Collectors.toList());
 
-        var directExchange = new DirectExchange(exchangeName);
         var bindings = queues.stream()
                 .map(q -> BindingBuilder.bind(q).to(directExchange).with(q.getActualName()))
                 .collect(Collectors.toList());
 
         List<Declarable> beans = new ArrayList<>(queues);
-        beans.add(directExchange);
         beans.addAll(bindings);
 
         return beans;
