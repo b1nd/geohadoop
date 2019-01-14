@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.b1nd.namenode.domain.Node;
 
-import static ru.b1nd.namenode.utils.Converter.getQueueNameByNode;
+import static ru.b1nd.namenode.utils.Converter.getHostPortByNode;
 
 @Service
 public class RabbitService {
@@ -24,7 +24,7 @@ public class RabbitService {
     }
 
     public void addNodeQueue(Node node) {
-        Queue queue = new Queue(getQueueNameByNode(node));
+        Queue queue = new Queue(getHostPortByNode(node));
         amqpAdmin.declareQueue(queue);
         amqpAdmin.declareBinding(getBindingByQueue(queue));
 
@@ -32,7 +32,7 @@ public class RabbitService {
     }
 
     public void deleteNodeQueue(Node node) {
-        Queue queue = new Queue(getQueueNameByNode(node));
+        Queue queue = new Queue(getHostPortByNode(node));
         amqpAdmin.removeBinding(getBindingByQueue(queue));
         amqpAdmin.deleteQueue(queue.getActualName());
 

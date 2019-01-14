@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static ru.b1nd.namenode.utils.Converter.getQueueNameByNode;
+import static ru.b1nd.namenode.utils.Converter.getHostPortByNode;
 
 @EnableRabbit
 @Configuration
@@ -46,7 +46,7 @@ public class RabbitConfiguration {
     public List<Declarable> directBindings(DirectExchange directExchange) {
         List<Node> nodes = clusterService.getNodes();
         List<Queue> queues = nodes.stream()
-                .map(n -> new Queue(getQueueNameByNode(n)))
+                .map(n -> new Queue(getHostPortByNode(n)))
                 .collect(Collectors.toList());
 
         var bindings = queues.stream()

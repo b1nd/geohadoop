@@ -7,7 +7,7 @@ public class Converter {
     private Converter() {
     }
 
-    public static String getQueueNameByNode(Node node) {
+    public static String getHostPortByNode(Node node) {
         return node.getHost() + ":" + node.getPort();
     }
 }

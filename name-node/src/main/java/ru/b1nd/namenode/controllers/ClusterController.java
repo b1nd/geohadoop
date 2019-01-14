@@ -31,7 +31,8 @@ public class ClusterController {
         if (clusterService.addNode(host, port)) {
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
-            return new ResponseEntity<>("Node " + host + ":" + port + " does not respond", HttpStatus.BAD_REQUEST);
+            String error = "Node " + host + ":" + port + " does not respond or already exists";
+            return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
         }
     }
 
