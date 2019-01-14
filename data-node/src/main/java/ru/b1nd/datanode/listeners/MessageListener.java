@@ -10,7 +10,7 @@ public class MessageListener {
 
     private final Logger logger = LoggerFactory.getLogger(MessageListener.class);
 
-    @RabbitListener(queues = "${queue.name}")
+    @RabbitListener(queues = "#{queue.name}")
     public void acceptMessage(String message) {
         logger.info("Received message: " + message);
         // TODO: Implement, do some job declared in message
