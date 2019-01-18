@@ -72,7 +72,13 @@ public class ClusterService {
     }
 
     private boolean checkHeartbeat(Node node) {
-        var entity = restTemplate.getForEntity(getHostPortByNode(node) + "/node/heartbeat", ResponseEntity.class);
-        return entity.getStatusCode().equals(HttpStatus.OK);
+        ResponseEntity<String> entity;
+        try {
+            entity = restTemplate.getForEntity("http://" + getHostPortByNode(node) + "/node/heartbeat", String.class);
+        } catch (RuntimeException e) {
+            logger.info("Node " + node + " does not respond");
+            return false;
+        }
+        return entity.getStatusCode() == HttpStatus.OK;
     }
 }
