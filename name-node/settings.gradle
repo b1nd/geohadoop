@@ -1,0 +1,2 @@
+include ':operations'
+project(':operations').projectDir = new File('../operations')

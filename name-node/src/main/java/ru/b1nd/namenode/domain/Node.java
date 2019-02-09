@@ -48,9 +48,6 @@ public class Node extends IDGeneratedValue {
 
     @Override
     public String toString() {
-        return "Node{" +
-                "host='" + host + '\'' +
-                ", port='" + port + '\'' +
-                '}';
+        return host + ":" + port;
     }
 }
