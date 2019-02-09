@@ -4,63 +4,56 @@ import java.util.Objects;
 
 public class UploadOperation {
     private String file;
+    private Integer w;
+    private Integer h;
     private String from;
-    private String to;
 
-    public UploadOperation(String file, String from, String to) {
+    public UploadOperation(String file, Integer w, Integer h, String from) {
         this.file = file;
+        this.w = w;
+        this.h = h;
         this.from = from;
-        this.to = to;
-    }
-
-    public UploadOperation() {
     }
 
     public String getFile() {
         return file;
     }
 
-    public void setFile(String file) {
-        this.file = file;
+    public Integer getW() {
+        return w;
+    }
+
+    public Integer getH() {
+        return h;
     }
 
     public String getFrom() {
         return from;
     }
 
-    public void setFrom(String from) {
-        this.from = from;
-    }
-
-    public String getTo() {
-        return to;
-    }
-
-    public void setTo(String to) {
-        this.to = to;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof UploadOperation)) return false;
         UploadOperation that = (UploadOperation) o;
         return Objects.equals(file, that.file) &&
-                Objects.equals(from, that.from) &&
-                Objects.equals(to, that.to);
+                Objects.equals(w, that.w) &&
+                Objects.equals(h, that.h) &&
+                Objects.equals(from, that.from);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(file, from, to);
+        return Objects.hash(file, w, h, from);
     }
 
     @Override
     public String toString() {
         return "UploadOperation{" +
                 "file='" + file + '\'' +
+                ", w=" + w +
+                ", h=" + h +
                 ", from='" + from + '\'' +
-                ", to='" + to + '\'' +
                 '}';
     }
 }
