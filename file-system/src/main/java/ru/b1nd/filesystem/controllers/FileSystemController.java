@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -15,6 +14,8 @@ import ru.b1nd.filesystem.services.FileSystemService;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
+
+import static ru.b1nd.filesystem.utils.Converter.partName;
 
 @Controller
 @RequestMapping("/file")
@@ -32,14 +33,20 @@ public class FileSystemController {
     public @ResponseBody
     ResponseEntity<?> uploadFile(@PathVariable String from, @RequestParam String file, @RequestParam Integer w, @RequestParam Integer h) {
         fileSystemService.requestAndSaveFile(from, file, w, h);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ResponseEntity.ok().body("File " + file + partName(w, h) + " successfully uploaded from " + from);
     }
 
     @GetMapping("/{fileName:.+}")
     public @ResponseBody
     ResponseEntity<Resource> downloadFile(@PathVariable String fileName, @RequestParam Integer w, @RequestParam Integer h,
-                                          HttpServletRequest request) throws IOException {
-        Resource resource = fileSystemService.getFileAsResource(fileName, w, h);
+                                          HttpServletRequest request) {
+        Resource resource;
+        try {
+            resource = fileSystemService.getFileAsResource(fileName, w, h);
+        } catch (IOException e) {
+            logger.error("Cannot get requested file " + fileName + w + h);
+            return ResponseEntity.badRequest().build();
+        }
 
         String contentType = null;
         try {

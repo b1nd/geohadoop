@@ -26,6 +26,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static ru.b1nd.filesystem.utils.Converter.partName;
+
 @Service
 public class FileSystemService {
     private final Logger logger = LoggerFactory.getLogger(FileSystemService.class);
@@ -48,7 +50,7 @@ public class FileSystemService {
     }
 
     public void requestAndSaveFile(String from, String file, int w, int h) {
-        String fullName = file + "w" + w + "h" + h;
+        String fullName = file + partName(w, h);
         ResponseEntity<Resource> entity = null;
         try {
             entity = restTemplate.getForEntity("http://" + from + "/file/" + file + "?" + "w=" + w + "&" + "h=" + h, Resource.class);
@@ -59,7 +61,7 @@ public class FileSystemService {
             logger.info("File " + fullName + " was not downloaded");
             return;
         }
-        logger.info("File " + file + "w" + w + "h" + h + " downloaded");
+        logger.info("File " + fullName + " downloaded");
         String filePath = uploadDir + file;
         if (new File(filePath).mkdirs()) {
             logger.info("New file " + file + " in file system");
@@ -68,10 +70,10 @@ public class FileSystemService {
         try {
             var buffer = ByteBuffer.allocate((int) resource.contentLength());
             resource.readableChannel().read(buffer);
-            Files.write(new File(filePath + "/" + "w" + w + "h" + h + ".tif").toPath(), buffer.array());
+            Files.write(new File(filePath + "/" + partName(w, h)).toPath(), buffer.array());
             logger.info("File " + fullName + " saved");
         } catch (IOException e) {
-            logger.info("Cannot save file " + fullName, e);
+            logger.error("Cannot save file " + fullName, e);
         }
     }
 
