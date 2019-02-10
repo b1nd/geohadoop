@@ -13,8 +13,6 @@ import ru.b1nd.namenode.repositories.NodeRepository;
 
 import java.util.List;
 
-import static ru.b1nd.namenode.utils.Converter.getHostPortByNode;
-
 @Service
 public class ClusterService {
 
@@ -74,7 +72,7 @@ public class ClusterService {
     private boolean checkHeartbeat(Node node) {
         ResponseEntity<String> entity;
         try {
-            entity = restTemplate.getForEntity("http://" + getHostPortByNode(node) + "/node/heartbeat", String.class);
+            entity = restTemplate.getForEntity("http://" + node + "/node/heartbeat", String.class);
         } catch (RuntimeException e) {
             logger.info("Node " + node + " does not respond");
             return false;

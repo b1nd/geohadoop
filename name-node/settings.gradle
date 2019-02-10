@@ -1,0 +1,4 @@
+include ':operations'
+include ':file-system'
+project(':operations').projectDir = new File('../operations')
+project(':file-system').projectDir = new File('../file-system')

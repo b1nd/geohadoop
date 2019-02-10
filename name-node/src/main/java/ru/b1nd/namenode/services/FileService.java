@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,9 +15,16 @@ import javax.imageio.stream.FileImageInputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -85,10 +94,14 @@ public class FileService {
                     if (new File(filesDir).mkdirs()) {
                         logger.debug("Dir " + filesDir + " created");
                     }
-                    ImageIO.write(tile, "tif", new File(filesDir + fileName + "w" + w + "h" + h + ".tif"));
+                    ImageIO.write(tile, "tif", new File(filesDir + getFilePartName(w, h)));
                 }
             }
         }
+    }
+
+    private String getFilePartName(int w, int h) {
+        return "w" + w + "h" + h + ".tif";
     }
 
     private String getFileExtension(String fileName) {
