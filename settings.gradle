@@ -2,3 +2,4 @@ rootProject.name = 'geohadoop'
 
 include 'name-node'
 include 'data-node'
+include 'file-system'
