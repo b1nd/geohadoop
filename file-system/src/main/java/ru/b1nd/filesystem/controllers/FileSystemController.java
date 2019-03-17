@@ -29,22 +29,22 @@ public class FileSystemController {
         this.fileSystemService = fileSystemService;
     }
 
-    @PostMapping("/{from:.+:\\d+}")
+    @PostMapping("/{from:.+}")
     public @ResponseBody
     ResponseEntity<?> uploadFile(@PathVariable String from, @RequestParam String file, @RequestParam Integer w, @RequestParam Integer h) {
         fileSystemService.requestAndSaveFile(from, file, w, h);
         return ResponseEntity.ok().body("File " + file + partName(w, h) + " successfully uploaded from " + from);
     }
 
-    @GetMapping("/{fileName:.+}")
+    @GetMapping("/{file:.+}")
     public @ResponseBody
-    ResponseEntity<Resource> downloadFile(@PathVariable String fileName, @RequestParam Integer w, @RequestParam Integer h,
+    ResponseEntity<Resource> downloadFile(@PathVariable String file, @RequestParam Integer w, @RequestParam Integer h,
                                           HttpServletRequest request) {
         Resource resource;
         try {
-            resource = fileSystemService.getFileAsResource(fileName, w, h);
+            resource = fileSystemService.getFileAsResource(file, w, h);
         } catch (IOException e) {
-            logger.error("Cannot get requested file " + fileName + w + h);
+            logger.error("Cannot get requested file " + file + w + h);
             return ResponseEntity.badRequest().build();
         }
 

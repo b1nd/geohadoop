@@ -23,8 +23,6 @@ import java.util.stream.Collectors;
 @Configuration
 public class RabbitConfiguration {
 
-    Logger logger = LoggerFactory.getLogger(RabbitConfiguration.class);
-
     @Value("${spring.rabbitmq.template.exchange}")
     private String exchangeName;
 

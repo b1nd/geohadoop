@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import ru.b1nd.filesystem.services.FileSystemService;
 import ru.b1nd.namenode.services.FileService;
 
 import java.io.IOException;
@@ -19,10 +20,12 @@ public class FileController {
     private final Logger logger = LoggerFactory.getLogger(FileController.class);
 
     private final FileService fileService;
+    private final FileSystemService fileSystemService;
 
     @Autowired
-    public FileController(FileService fileService) {
+    public FileController(FileService fileService, FileSystemService fileSystemService) {
         this.fileService = fileService;
+        this.fileSystemService = fileSystemService;
     }
 
     @PostMapping("/upload")
@@ -45,7 +48,7 @@ public class FileController {
     public @ResponseBody
     List<String> getFileNames() {
         try {
-            return fileService.getFileNames();
+            return fileSystemService.getFileNames();
         } catch (IOException e) {
             logger.error("Can't get file names", e);
         }

@@ -84,6 +84,12 @@ public class FileSystemService {
                 .collect(Collectors.toList());
     }
 
+    public List<File> getFilePartitions(String fileName) throws IOException {
+        return Files.list(new File(uploadDir + fileName).toPath())
+                .map(Path::toFile)
+                .collect(Collectors.toList());
+    }
+
     public Resource getFileAsResource(String fileName, int w, int h) throws IOException {
         Optional<Path> dirPath = Files.list(new File(uploadDir).toPath())
                 .filter(p -> p.toFile().getName().equals(fileName))

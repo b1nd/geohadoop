@@ -1,4 +1,4 @@
-package ru.b1nd.namenode.model;
+package ru.b1nd.operations.model;
 
 import ru.b1nd.operations.OperationUtils;
 
