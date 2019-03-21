@@ -8,8 +8,7 @@ public class Node extends IDGeneratedValue {
     private String host;
     private String port;
 
-    public Node() {
-    }
+    public Node() { }
 
     public Node(String host, String port) {
         this.host = host;

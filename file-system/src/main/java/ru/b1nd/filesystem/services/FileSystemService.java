@@ -8,6 +8,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -34,6 +35,15 @@ public class FileSystemService {
 
     @Value("${upload.dir}")
     private String uploadDir;
+
+    @Value("${main.server.name}")
+    private String nameNode;
+
+    @Value("${server.address}")
+    private String myHost;
+
+    @Value("${server.port}")
+    private String myPort;
 
     private final RestTemplate restTemplate;
 
@@ -64,7 +74,7 @@ public class FileSystemService {
         logger.info("File " + fullName + " downloaded");
         String filePath = uploadDir + file;
         if (new File(filePath).mkdirs()) {
-            logger.info("New file " + file + " in file system");
+            logger.debug("New file " + file + " in file system");
         }
         var resource = entity.getBody();
         try {
@@ -72,6 +82,8 @@ public class FileSystemService {
             resource.readableChannel().read(buffer);
             Files.write(new File(filePath + "/" + partName(w, h)).toPath(), buffer.array());
             logger.info("File " + fullName + " saved");
+
+            registerPartition(myHost + ":" + myPort, file, w, h);
         } catch (IOException e) {
             logger.error("Cannot save file " + fullName, e);
         }
@@ -119,6 +131,17 @@ public class FileSystemService {
                     .map(this::getUrlResourceByPath)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
+        }
+    }
+
+    private void registerPartition(String node, String file, int w, int h) {
+        String partition = "node=" + node + "&" + "file=" + file + "&" + "w=" + w + "&" + "h=" + h;
+        var response = restTemplate.postForEntity("http://" + nameNode + "/cluster/partition/add" + "?" +
+                partition, null, ResponseEntity.class);
+        if (response.getStatusCode() == HttpStatus.OK) {
+            logger.info("Partition " + partition + " registered");
+        } else {
+            logger.error("Partition " + partition + " was not registered");
         }
     }
 

@@ -14,16 +14,16 @@ import ru.b1nd.namenode.repositories.NodeRepository;
 import java.util.List;
 
 @Service
-public class ClusterService {
+public class ClusterManagementService {
 
-    private final Logger logger = LoggerFactory.getLogger(ClusterService.class);
+    private final Logger logger = LoggerFactory.getLogger(ClusterManagementService.class);
 
     private final RestTemplate restTemplate;
     private final NodeRepository nodeRepository;
     private final RabbitService rabbitService;
 
     @Autowired
-    public ClusterService(RestTemplate restTemplate, NodeRepository nodeRepository, RabbitService rabbitService) {
+    public ClusterManagementService(RestTemplate restTemplate, NodeRepository nodeRepository, RabbitService rabbitService) {
         this.restTemplate = restTemplate;
         this.nodeRepository = nodeRepository;
         this.rabbitService = rabbitService;

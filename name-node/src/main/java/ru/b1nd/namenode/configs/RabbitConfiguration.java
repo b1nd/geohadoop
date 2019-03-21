@@ -1,7 +1,5 @@
 package ru.b1nd.namenode.configs;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Declarable;
 import org.springframework.amqp.core.DirectExchange;
@@ -13,7 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import ru.b1nd.namenode.domain.Node;
-import ru.b1nd.namenode.services.ClusterService;
+import ru.b1nd.namenode.services.ClusterManagementService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,11 +24,11 @@ public class RabbitConfiguration {
     @Value("${spring.rabbitmq.template.exchange}")
     private String exchangeName;
 
-    private final ClusterService clusterService;
+    private final ClusterManagementService clusterManagementService;
 
     @Autowired
-    public RabbitConfiguration(@Lazy ClusterService clusterService) {
-        this.clusterService = clusterService;
+    public RabbitConfiguration(@Lazy ClusterManagementService clusterManagementService) {
+        this.clusterManagementService = clusterManagementService;
     }
 
     @Bean
@@ -40,7 +38,7 @@ public class RabbitConfiguration {
 
     @Bean
     public List<Declarable> directBindings(DirectExchange directExchange) {
-        List<Node> nodes = clusterService.getNodes();
+        List<Node> nodes = clusterManagementService.getNodes();
         List<Queue> queues = nodes.stream()
                 .map(n -> new Queue(n.toString()))
                 .collect(Collectors.toList());

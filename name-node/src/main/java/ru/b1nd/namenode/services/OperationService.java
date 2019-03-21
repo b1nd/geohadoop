@@ -23,24 +23,26 @@ public class OperationService {
 
     private final Logger logger = LoggerFactory.getLogger(OperationService.class);
 
-    @Value("${server.address.full}")
+    @Value("${main.server.name}")
     private String myAddress;
 
     private final MessageService messageService;
-    private final ClusterService clusterService;
+    private final ClusterManagementService clusterManagementService;
+    private final ClusterFileService clusterFileService;
     private final FileSystemService fileSystemService;
 
     @Autowired
-    public OperationService(MessageService messageService, ClusterService clusterService, FileSystemService fileSystemService) {
+    public OperationService(MessageService messageService, ClusterManagementService clusterManagementService, ClusterFileService clusterFileService, FileSystemService fileSystemService) {
         this.messageService = messageService;
-        this.clusterService = clusterService;
+        this.clusterManagementService = clusterManagementService;
+        this.clusterFileService = clusterFileService;
         this.fileSystemService = fileSystemService;
     }
 
     public void performUploadOperation(String fileName, int partitionNum) throws Exception {
         List<File> filePartitions = fileSystemService.getFilePartitions(fileName);
         List<Pair<Integer, Integer>> wh = getFilesWH(filePartitions.stream().map(File::getName));
-        List<Node> nodes = clusterService.getNodes();
+        List<Node> nodes = clusterManagementService.getNodes();
         if (nodes.isEmpty()) {
             throw new Exception("There are no available nodes to perform upload operation");
         }
@@ -51,6 +53,8 @@ public class OperationService {
         var del  = wh.size() / workers.size();
         var load = del % 10 == 0 ? del : del + 1;
         var it   = wh.iterator();
+
+        clusterFileService.registerFile(fileName);
 
         workers.forEach(n -> {
             for (int i = 0; i < load && it.hasNext(); ++i) {

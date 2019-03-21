@@ -8,27 +8,27 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import ru.b1nd.namenode.domain.Node;
-import ru.b1nd.namenode.services.ClusterService;
+import ru.b1nd.namenode.services.ClusterManagementService;
 
 import java.util.List;
 
 @Controller
 @RequestMapping("/api/cluster")
-public class ClusterController {
+public class ClusterManagementController {
 
-    private final Logger logger = LoggerFactory.getLogger(ClusterController.class);
+    private final Logger logger = LoggerFactory.getLogger(ClusterManagementController.class);
 
-    private final ClusterService clusterService;
+    private final ClusterManagementService clusterManagementService;
 
     @Autowired
-    public ClusterController(ClusterService clusterService) {
-        this.clusterService = clusterService;
+    public ClusterManagementController(ClusterManagementService clusterManagementService) {
+        this.clusterManagementService = clusterManagementService;
     }
 
     @PostMapping("/add")
     public @ResponseBody
     ResponseEntity<?> addNode(@RequestParam("host") String host, @RequestParam("port") String port) {
-        if (clusterService.addNode(host, port)) {
+        if (clusterManagementService.addNode(host, port)) {
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
             String error = "Node " + host + ":" + port + " does not respond or already exists";
@@ -39,7 +39,7 @@ public class ClusterController {
     @PostMapping("/del")
     public @ResponseBody
     ResponseEntity<?> deleteNode(@RequestParam("host") String host, @RequestParam("port") String port) {
-        if (clusterService.deleteNode(host, port)) {
+        if (clusterManagementService.deleteNode(host, port)) {
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
             return new ResponseEntity<>("Node " + host + ":" + port + " not found", HttpStatus.BAD_REQUEST);
@@ -49,13 +49,13 @@ public class ClusterController {
     @PostMapping("/synchronize")
     public @ResponseBody
     ResponseEntity<?> synchronizeNodes() {
-        clusterService.synchronizeNodes();
+        clusterManagementService.synchronizeNodes();
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/all")
     public @ResponseBody
     List<Node> getNodes() {
-        return clusterService.getNodes();
+        return clusterManagementService.getNodes();
     }
 }
