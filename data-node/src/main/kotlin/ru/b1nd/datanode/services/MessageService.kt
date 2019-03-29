@@ -8,6 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import ru.b1nd.operations.OperationUtils
 import ru.b1nd.operations.model.UploadOperation
+import ru.b1nd.operations.model.binary.AddOperation
+import ru.b1nd.operations.model.binary.DivideOperation
+import ru.b1nd.operations.model.binary.MultiplyOperation
+import ru.b1nd.operations.model.binary.SubtractOperation
 
 @Service
 class MessageService @Autowired constructor(private val operationService: OperationService,
@@ -24,7 +28,11 @@ class MessageService @Autowired constructor(private val operationService: Operat
         val op = gson.fromJson(body, type)
 
         when (op) {
-            is UploadOperation -> operationService.doUploadOperation(op)
+            is UploadOperation   -> operationService.doUploadOperation(op)
+            is AddOperation      -> operationService.doAddOperation(op)
+            is SubtractOperation -> operationService.doSubtractOperation(op)
+            is MultiplyOperation -> operationService.doMultiplyOperation(op)
+            is DivideOperation   -> operationService.doDivideOperation(op)
         }
     }
 }

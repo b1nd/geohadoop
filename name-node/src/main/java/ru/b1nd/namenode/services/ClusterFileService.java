@@ -1,5 +1,6 @@
 package ru.b1nd.namenode.services;
 
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.b1nd.namenode.domain.File;
@@ -8,6 +9,9 @@ import ru.b1nd.namenode.repositories.FileRepository;
 import ru.b1nd.namenode.repositories.NodeRepository;
 import ru.b1nd.namenode.repositories.PartitionRepository;
 import ru.b1nd.namenode.utils.Converter;
+
+import java.io.IOException;
+import java.util.List;
 
 @Service
 public class ClusterFileService {
@@ -46,5 +50,41 @@ public class ClusterFileService {
 
     public void registerFile(String fileName) {
         fileRepository.save(new File(fileName));
+    }
+
+    public File getFile(String fileName) throws IOException {
+        File file = fileRepository.findFileByName(fileName);
+        if (file == null) {
+            throw new IOException("File " + fileName + " not found in file system!");
+        } else {
+            return file;
+        }
+    }
+
+    public List<Partition> getPartitions(File file, int w, int h) throws IOException {
+        var partitions = partitionRepository.findAllByFileAndWAndH(file, w, h);
+        if (partitions.isEmpty()) {
+            throw new IOException("No partitions " + file + " w=" + w + " h=" + h + " found in file system!");
+        } else {
+            return partitions;
+        }
+    }
+
+    public List<Partition> getPartitions(File file) throws IOException {
+        var partitions = partitionRepository.findAllByFile(file);
+        if (partitions.isEmpty()) {
+            throw new IOException("No file " + file + " partitions found in file system!");
+        } else {
+            return partitions;
+        }
+    }
+
+    public List<Partition> getPartitions() throws IOException {
+        var partitions = Lists.newArrayList(partitionRepository.findAll());
+        if (partitions.isEmpty()) {
+            throw new IOException("No partitions found in file system!");
+        } else {
+            return partitions;
+        }
     }
 }

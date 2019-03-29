@@ -36,12 +36,69 @@ public class OperationController {
             logger.error("Cannot perform upload operation with file " + file, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error in filesystem, operation could not be performed with file " + file);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(e.getMessage());
         }
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/add")
+    public @ResponseBody
+    ResponseEntity<?> addOperation(@RequestParam String left, @RequestParam String right, @RequestParam String file) {
+        try {
+            operationService.performAddOperation(left, right, file);
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Operation could not be performed: " + e.getMessage());
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/subtract")
+    public @ResponseBody
+    ResponseEntity<?> subtractOperation(@RequestParam String left, @RequestParam String right, @RequestParam String file) {
+        try {
+            operationService.performSubtractOperation(left, right, file);
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Operation could not be performed: " + e.getMessage());
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/multiply")
+    public @ResponseBody
+    ResponseEntity<?> multiplyOperation(@RequestParam String left, @RequestParam String right, @RequestParam String file) {
+        try {
+            operationService.performMultiplyOperation(left, right, file);
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Operation could not be performed: " + e.getMessage());
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/divide")
+    public @ResponseBody
+    ResponseEntity<?> divideOperation(@RequestParam String left, @RequestParam String right, @RequestParam String file) {
+        try {
+            operationService.performDivideOperation(left, right, file);
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Operation could not be performed: " + e.getMessage());
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/map")
+    public @ResponseBody
+    ResponseEntity<?> mapOperation(@RequestParam String file, @RequestParam String newFile) {
         return ResponseEntity.ok().build();
     }
 }
