@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import ru.b1nd.namenode.services.OperationService;
+import ru.b1nd.operations.OperationUtils;
 
 import java.io.IOException;
 
@@ -35,7 +36,7 @@ public class OperationController {
         } catch (IOException e) {
             logger.error("Cannot perform upload operation with file " + file, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error in filesystem, operation could not be performed with file " + file);
+                    .body("Error in filesystem, upload operation could not be performed with file " + file);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -47,58 +48,35 @@ public class OperationController {
     @PostMapping("/add")
     public @ResponseBody
     ResponseEntity<?> addOperation(@RequestParam String left, @RequestParam String right, @RequestParam String file) {
-        try {
-            operationService.performAddOperation(left, right, file);
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Operation could not be performed: " + e.getMessage());
-        }
-        return ResponseEntity.ok().build();
+        return binaryOperationResponseEntity(left, right, file, OperationUtils.OperationType.ADD);
     }
 
     @PostMapping("/subtract")
     public @ResponseBody
     ResponseEntity<?> subtractOperation(@RequestParam String left, @RequestParam String right, @RequestParam String file) {
-        try {
-            operationService.performSubtractOperation(left, right, file);
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Operation could not be performed: " + e.getMessage());
-        }
-        return ResponseEntity.ok().build();
+        return binaryOperationResponseEntity(left, right, file, OperationUtils.OperationType.SUBTRACT);
     }
 
     @PostMapping("/multiply")
     public @ResponseBody
     ResponseEntity<?> multiplyOperation(@RequestParam String left, @RequestParam String right, @RequestParam String file) {
-        try {
-            operationService.performMultiplyOperation(left, right, file);
-        } catch (IOException e) {
-            logger.error(e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Operation could not be performed: " + e.getMessage());
-        }
-        return ResponseEntity.ok().build();
+        return binaryOperationResponseEntity(left, right, file, OperationUtils.OperationType.MULTIPLY);
     }
 
     @PostMapping("/divide")
     public @ResponseBody
     ResponseEntity<?> divideOperation(@RequestParam String left, @RequestParam String right, @RequestParam String file) {
+        return binaryOperationResponseEntity(left, right, file, OperationUtils.OperationType.DIVIDE);
+    }
+
+    private ResponseEntity<?> binaryOperationResponseEntity(String left, String right, String file, OperationUtils.OperationType type) {
         try {
-            operationService.performDivideOperation(left, right, file);
+            operationService.performBinaryOperation(left, right, file, type);
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Operation could not be performed: " + e.getMessage());
         }
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/map")
-    public @ResponseBody
-    ResponseEntity<?> mapOperation(@RequestParam String file, @RequestParam String newFile) {
         return ResponseEntity.ok().build();
     }
 }

@@ -83,7 +83,7 @@ public class FileSystemService {
             Files.write(new File(filePath + "/" + partName(w, h)).toPath(), buffer.array());
             logger.info("File " + fullName + " saved");
 
-            registerPartition(myHost + ":" + myPort, file, w, h);
+            registerPartition(file, w, h);
         } catch (IOException e) {
             logger.error("Cannot save file " + fullName, e);
         }
@@ -100,6 +100,22 @@ public class FileSystemService {
         return Files.list(new File(uploadDir + fileName).toPath())
                 .map(Path::toFile)
                 .collect(Collectors.toList());
+    }
+
+    public File getFilePartition(String fileName, int w, int h) throws IOException {
+        return Files.list(new File(uploadDir + fileName).toPath())
+                .map(Path::toFile)
+                .filter(p -> checkFilePartName(p.getName(), w, h))
+                .findFirst()
+                .orElseThrow(() -> new IOException("Cannot find partition " + fileName + " w=" + w + " h=" + h));
+    }
+
+    public File createNewPartition(String fileName, int w, int h) {
+        var file = new File(uploadDir + fileName + "/" + partName(w, h));
+        if (file.mkdirs()) {
+            logger.debug("New file " + file + " in file system");
+        }
+        return file;
     }
 
     public Resource getFileAsResource(String fileName, int w, int h) throws IOException {
@@ -134,8 +150,8 @@ public class FileSystemService {
         }
     }
 
-    private void registerPartition(String node, String file, int w, int h) {
-        String partition = "node=" + node + "&" + "file=" + file + "&" + "w=" + w + "&" + "h=" + h;
+    public void registerPartition(String file, int w, int h) {
+        String partition = "node=" + myHost + ":" + myPort + "&" + "file=" + file + "&" + "w=" + w + "&" + "h=" + h;
         var response = restTemplate.postForEntity("http://" + nameNode + "/cluster/partition/add" + "?" +
                 partition, null, ResponseEntity.class);
         if (response.getStatusCode() == HttpStatus.OK) {

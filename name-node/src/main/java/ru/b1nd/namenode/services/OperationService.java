@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import ru.b1nd.filesystem.services.FileSystemService;
 import ru.b1nd.namenode.domain.Node;
 import ru.b1nd.namenode.domain.Partition;
+import ru.b1nd.operations.OperationUtils;
 import ru.b1nd.operations.model.BinaryOperation;
 import ru.b1nd.operations.model.Message;
 import ru.b1nd.operations.model.UploadOperation;
@@ -23,7 +24,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -49,32 +49,25 @@ public class OperationService {
         this.fileSystemService = fileSystemService;
     }
 
-    public void performAddOperation(String leftFileName, String rightFileName, String newFileName) throws IOException {
+    public void performBinaryOperation(String leftFileName, String rightFileName, String newFileName, OperationUtils.OperationType type) throws IOException {
         var operations = shuffle(leftFileName, rightFileName, newFileName);
         operations.forEach(op -> messageService.sendMessage(op.node, new Message<>(
-                new AddOperation(op.binary.getLeft(), op.binary.getRight(), op.binary.getW(), op.binary.getH(), op.binary.getFile()))));
+                getBinaryOperation(op.binary, type))));
     }
 
-    public void performSubtractOperation(String leftFileName, String rightFileName, String newFileName) throws IOException {
-        var operations = shuffle(leftFileName, rightFileName, newFileName);
-        operations.forEach(op -> messageService.sendMessage(op.node, new Message<>(
-                new SubtractOperation(op.binary.getLeft(), op.binary.getRight(), op.binary.getW(), op.binary.getH(), op.binary.getFile()))));
-    }
-
-    public void performMultiplyOperation(String leftFileName, String rightFileName, String newFileName) throws IOException {
-        var operations = shuffle(leftFileName, rightFileName, newFileName);
-        operations.forEach(op -> messageService.sendMessage(op.node, new Message<>(
-                new MultiplyOperation(op.binary.getLeft(), op.binary.getRight(), op.binary.getW(), op.binary.getH(), op.binary.getFile()))));
-    }
-
-    public void performDivideOperation(String leftFileName, String rightFileName, String newFileName) throws IOException {
-        var operations = shuffle(leftFileName, rightFileName, newFileName);
-        operations.forEach(op -> messageService.sendMessage(op.node, new Message<>(
-                new DivideOperation(op.binary.getLeft(), op.binary.getRight(), op.binary.getW(), op.binary.getH(), op.binary.getFile()))));
-    }
-
-    public void performMapOperation(String fileName, Function<Double, Double> f, String newFileName) {
-        // TODO: implement
+    private BinaryOperation getBinaryOperation(BinaryOperation op, OperationUtils.OperationType type) {
+        switch (type) {
+            case ADD:
+                return new AddOperation(op.getLeft(), op.getRight(), op.getW(), op.getH(), op.getFile());
+            case SUBTRACT:
+                return new SubtractOperation(op.getLeft(), op.getRight(), op.getW(), op.getH(), op.getFile());
+            case MULTIPLY:
+                return new MultiplyOperation(op.getLeft(), op.getRight(), op.getW(), op.getH(), op.getFile());
+            case DIVIDE:
+                return new DivideOperation(op.getLeft(), op.getRight(), op.getW(), op.getH(), op.getFile());
+            default:
+               throw new IllegalArgumentException(type + " not a binary operation!");
+        }
     }
 
     public void performUploadOperation(String fileName, int partitionNum) throws Exception {
@@ -109,9 +102,11 @@ public class OperationService {
         var rightPartitions = clusterFileService.getPartitions(rightFile);
 
         var leftWH = leftPartitions.stream().map(p -> Pair.of(p.getW(), p.getH())).distinct();
-        var rightWH = rightPartitions.stream().map(p -> Pair.of(p.getW(), p.getH())).collect(Collectors.toSet());
+        var rightWH = rightPartitions.stream().map(p -> Pair.of(p.getW(), p.getH())).distinct().collect(Collectors.toList());
 
-        var commonWH = leftWH.filter(rightWH::contains).collect(Collectors.toSet());
+        var commonWH = leftWH.filter(rightWH::contains).distinct().collect(Collectors.toList());
+
+        clusterFileService.registerFile(newFileName);
 
         List<NodeBinaryOperation> operations = Lists.newArrayList();
 
@@ -135,22 +130,33 @@ public class OperationService {
         var rightFileName = rightPartitions.get(0).getFile().getName();
 
         if (node.isPresent()) {
+            logger.info("Found node " + node.get() + " with similar partition w=" + w + " h=" + h + " left=" + leftFileName + " right=" + rightFileName);
             return new NodeBinaryOperation(node.get(), new BinaryOperation(leftFileName, rightFileName, w, h, newFileName));
         } else {
-            var par = leftPartitions.get(0);
-            sendUploadOperationMessage(par.getNode(), rightFileName, Pair.of(par.getW(), par.getH()));
+            var leftPart  = leftPartitions.get(0);
+            var rightPart = rightPartitions.get(0);
 
-            return new NodeBinaryOperation(par.getNode(), new BinaryOperation(leftFileName, rightFileName, w, h, newFileName));
+            logger.info("Similar partition not found. Telling " + leftPart.getNode() + " to download file "
+                    + rightFileName + "w" + w + "h" + h + " from " + rightPart.getNode());
+
+            sendUploadMessage(leftPart.getNode(), rightPart.getNode(), rightFileName, Pair.of(leftPart.getW(), leftPart.getH()));
+
+            return new NodeBinaryOperation(leftPart.getNode(), new BinaryOperation(leftFileName, rightFileName, w, h, newFileName));
         }
     }
 
-    private List<Partition> findPartitionsByWH(Collection<Partition> partitions, int h, int w) throws IOException {
-        List<Partition> res = partitions.stream().filter(p -> p.getH() == h && p.getW() == w).collect(Collectors.toList());
+    private List<Partition> findPartitionsByWH(Collection<Partition> partitions, int w, int h) throws IOException {
+        List<Partition> res = partitions.stream().filter(p -> p.getW() == w && p.getH() == h).collect(Collectors.toList());
         if (res.isEmpty()) {
             throw new IOException("No partitions " + partitions.iterator().next().getFile().getName() + " w=" + w + " h=" + h + " found in file system!");
         } else {
             return res;
         }
+    }
+
+    private void sendUploadMessage(Node to, Node from, String fileName, Pair<Integer, Integer> wh) {
+        var op = new UploadOperation(fileName, wh.getFirst(), wh.getSecond(), from.toString());
+        messageService.sendMessage(to, new Message<>(op));
     }
 
     private void sendUploadOperationMessage(Node to, String fileName, Pair<Integer, Integer> wh) {

@@ -22,6 +22,10 @@ public class MessageListener {
     @RabbitListener(queues = "#{queue.name}")
     public void acceptMessage(String message) {
         logger.info("Received message: " + message);
-        messageService.acceptMessage(message);
+        try {
+            messageService.acceptMessage(message);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+        }
     }
 }

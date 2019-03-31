@@ -2,18 +2,18 @@ package ru.b1nd.operations;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
-import ru.b1nd.operations.model.UploadOperation;
 import ru.b1nd.operations.model.binary.AddOperation;
 import ru.b1nd.operations.model.binary.DivideOperation;
 import ru.b1nd.operations.model.binary.MultiplyOperation;
 import ru.b1nd.operations.model.binary.SubtractOperation;
+import ru.b1nd.operations.model.UploadOperation;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public class OperationUtils {
 
-    private enum OperationType {
+    public enum OperationType {
         UPLOAD(UploadOperation.class),
         ADD(AddOperation.class),
         SUBTRACT(SubtractOperation.class),

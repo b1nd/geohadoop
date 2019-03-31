@@ -5,11 +5,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.b1nd.filesystem.services.FileSystemService;
+import ru.b1nd.operations.OperationUtils;
+import ru.b1nd.operations.model.BinaryOperation;
 import ru.b1nd.operations.model.UploadOperation;
-import ru.b1nd.operations.model.binary.AddOperation;
-import ru.b1nd.operations.model.binary.DivideOperation;
-import ru.b1nd.operations.model.binary.MultiplyOperation;
-import ru.b1nd.operations.model.binary.SubtractOperation;
+
+import javax.imageio.ImageIO;
+import javax.media.jai.JAI;
+import java.awt.image.renderable.ParameterBlock;
+import java.io.File;
+import java.io.IOException;
 
 @Service
 public class OperationService {
@@ -27,19 +31,26 @@ public class OperationService {
         fileSystemService.requestAndSaveFile(op.getFrom(), op.getFile(), op.getW(), op.getH());
     }
 
-    public void doAddOperation(AddOperation op) {
-        logger.info(op.toString());
-    }
+    public void doBinaryOperation(BinaryOperation op, Class<?> opClass) throws IOException {
+        String opName = OperationUtils.getNameByType(opClass);
 
-    public void doSubtractOperation(SubtractOperation op) {
-        logger.info(op.toString());
-    }
+        int w = op.getW();
+        int h = op.getH();
 
-    public void doMultiplyOperation(MultiplyOperation op) {
-        logger.info(op.toString());
-    }
+        File left    = fileSystemService.getFilePartition(op.getLeft(), w, h);
+        File right   = fileSystemService.getFilePartition(op.getRight(), w, h);
+        File newFile = fileSystemService.createNewPartition(op.getFile(), w, h);
 
-    public void doDivideOperation(DivideOperation op) {
-        logger.info(op.toString());
+        var leftImage  = ImageIO.read(left);
+        var rightImage = ImageIO.read(right);
+
+        var params = new ParameterBlock();
+        params.addSource(leftImage);
+        params.addSource(rightImage);
+
+        var image = JAI.create(opName, params).getAsBufferedImage();
+        ImageIO.write(image, "tif", newFile);
+
+        fileSystemService.registerPartition(op.getFile(), w, h);
     }
 }

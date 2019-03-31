@@ -48,7 +48,10 @@ public class ClusterFileService {
         }
     }
 
-    public void registerFile(String fileName) {
+    public void registerFile(String fileName) throws IOException {
+        if (fileRepository.findFileByName(fileName) != null) {
+            throw new IOException("File " + fileName + " already exists! You must change file name or delete old file.");
+        }
         fileRepository.save(new File(fileName));
     }
 

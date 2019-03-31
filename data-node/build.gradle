@@ -24,17 +24,26 @@ version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 11
 
 repositories {
+    jcenter {
+        url "http://download.osgeo.org/webdav/geotools/"
+    }
+    maven {
+        url "http://maven.geo-solutions.it"
+    }
     mavenCentral()
 }
 
 dependencies {
-    implementation('org.springframework.boot:spring-boot-starter')
+    implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'com.google.code.gson:gson:2.8.5'
-    testImplementation('org.springframework.boot:spring-boot-starter-test')
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     compile 'org.springframework.boot:spring-boot-starter-web'
     compile 'org.springframework.boot:spring-boot-starter-amqp'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    compile 'it.geosolutions.jaiext.algebra:jt-algebra:1.0.12'
+    compile 'org.geotools:geotools:15.0'
+    compile 'org.geotools:gt-coverage:15.0'
 
     compile project(':file-system')
     compile project(':operations')

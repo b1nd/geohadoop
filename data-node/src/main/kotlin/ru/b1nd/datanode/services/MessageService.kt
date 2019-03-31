@@ -28,11 +28,11 @@ class MessageService @Autowired constructor(private val operationService: Operat
         val op = gson.fromJson(body, type)
 
         when (op) {
-            is UploadOperation   -> operationService.doUploadOperation(op)
-            is AddOperation      -> operationService.doAddOperation(op)
-            is SubtractOperation -> operationService.doSubtractOperation(op)
-            is MultiplyOperation -> operationService.doMultiplyOperation(op)
-            is DivideOperation   -> operationService.doDivideOperation(op)
+            is UploadOperation -> operationService.doUploadOperation(op)
+            is AddOperation -> operationService.doBinaryOperation(op, op.javaClass)
+            is SubtractOperation -> operationService.doBinaryOperation(op, op.javaClass)
+            is MultiplyOperation -> operationService.doBinaryOperation(op, op.javaClass)
+            is DivideOperation -> operationService.doBinaryOperation(op, op.javaClass)
         }
     }
 }
