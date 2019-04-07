@@ -69,6 +69,19 @@ public class OperationController {
         return binaryOperationResponseEntity(left, right, file, OperationUtils.OperationType.DIVIDE);
     }
 
+    @PostMapping("/ndvi")
+    public @ResponseBody
+    ResponseEntity<?> ndviOperation(@RequestParam String file, @RequestParam String name) {
+        try {
+            operationService.performNDVIOperation(file, name);
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Operation could not be performed: " + e.getMessage());
+        }
+        return ResponseEntity.ok().build();
+    }
+
     private ResponseEntity<?> binaryOperationResponseEntity(String left, String right, String file, OperationUtils.OperationType type) {
         try {
             operationService.performBinaryOperation(left, right, file, type);

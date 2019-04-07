@@ -13,6 +13,7 @@ import ru.b1nd.namenode.domain.Partition;
 import ru.b1nd.operations.OperationUtils;
 import ru.b1nd.operations.model.BinaryOperation;
 import ru.b1nd.operations.model.Message;
+import ru.b1nd.operations.model.NDVIOperation;
 import ru.b1nd.operations.model.UploadOperation;
 import ru.b1nd.operations.model.binary.AddOperation;
 import ru.b1nd.operations.model.binary.DivideOperation;
@@ -68,6 +69,15 @@ public class OperationService {
             default:
                throw new IllegalArgumentException(type + " not a binary operation!");
         }
+    }
+
+    public void performNDVIOperation(String fileName, String newFileName) throws IOException {
+        var file  = clusterFileService.getFile(fileName);
+        var nodes = clusterFileService.getPartitions(file).stream().map(Partition::getNode).collect(Collectors.toSet());
+
+        clusterFileService.registerFile(newFileName);
+
+        nodes.forEach(n -> messageService.sendMessage(n, new Message<>(new NDVIOperation(fileName, newFileName))));
     }
 
     public void performUploadOperation(String fileName, int partitionNum) throws Exception {

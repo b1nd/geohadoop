@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import ru.b1nd.operations.OperationUtils
+import ru.b1nd.operations.model.NDVIOperation
 import ru.b1nd.operations.model.UploadOperation
 import ru.b1nd.operations.model.binary.AddOperation
 import ru.b1nd.operations.model.binary.DivideOperation
@@ -28,11 +29,12 @@ class MessageService @Autowired constructor(private val operationService: Operat
         val op = gson.fromJson(body, type)
 
         when (op) {
-            is UploadOperation -> operationService.doUploadOperation(op)
-            is AddOperation -> operationService.doBinaryOperation(op, op.javaClass)
+            is UploadOperation   -> operationService.doUploadOperation(op)
+            is AddOperation      -> operationService.doBinaryOperation(op, op.javaClass)
             is SubtractOperation -> operationService.doBinaryOperation(op, op.javaClass)
             is MultiplyOperation -> operationService.doBinaryOperation(op, op.javaClass)
-            is DivideOperation -> operationService.doBinaryOperation(op, op.javaClass)
+            is DivideOperation   -> operationService.doBinaryOperation(op, op.javaClass)
+            is NDVIOperation     -> operationService.doNDVIOperation(op)
         }
     }
 }
