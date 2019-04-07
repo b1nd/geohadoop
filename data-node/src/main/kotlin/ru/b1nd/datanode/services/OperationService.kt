@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service
 import ru.b1nd.filesystem.services.FileSystemService
 import ru.b1nd.operations.OperationUtils
 import ru.b1nd.operations.model.BinaryOperation
+import ru.b1nd.operations.model.DeleteOperation
 import ru.b1nd.operations.model.NDVIOperation
 import ru.b1nd.operations.model.UploadOperation
 import ru.b1nd.operations.model.binary.DivideOperation
@@ -25,6 +26,10 @@ constructor(private val fileSystemService: FileSystemService) {
 
     fun doUploadOperation(op: UploadOperation) {
         fileSystemService.requestAndSaveFile(op.from, op.file, op.w, op.h)
+    }
+
+    fun doDeleteOperation(op: DeleteOperation) {
+        fileSystemService.deleteFile(op.file)
     }
 
     fun doBinaryOperation(op: BinaryOperation, opClass: Class<*>) {
@@ -79,7 +84,7 @@ constructor(private val fileSystemService: FileSystemService) {
 
             logger.info("$opName successfully done!")
 
-            fileSystemService.registerPartition(file.name, wh.first, wh.second)
+            fileSystemService.registerPartition(op.fileName, wh.first, wh.second)
         }
     }
 

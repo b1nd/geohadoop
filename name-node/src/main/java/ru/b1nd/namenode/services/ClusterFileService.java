@@ -1,6 +1,8 @@
 package ru.b1nd.namenode.services;
 
 import com.google.common.collect.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.b1nd.namenode.domain.File;
@@ -15,6 +17,8 @@ import java.util.List;
 
 @Service
 public class ClusterFileService {
+
+    private final Logger logger = LoggerFactory.getLogger(ClusterFileService.class);
 
     private final NodeRepository nodeRepository;
     private final FileRepository fileRepository;
@@ -89,5 +93,13 @@ public class ClusterFileService {
         } else {
             return partitions;
         }
+    }
+
+    public void deletePartitions(Iterable<Partition> partitions) {
+        partitionRepository.deleteAll(partitions);
+    }
+
+    public void deleteFile(File file) {
+        fileRepository.delete(file);
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileSystemUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
@@ -116,6 +117,12 @@ public class FileSystemService {
             logger.debug("New file " + file + " in file system");
         }
         return file;
+    }
+
+    public void deleteFile(String fileName) {
+        if (FileSystemUtils.deleteRecursively(new File(uploadDir + "/" + fileName))) {
+            logger.info("Successfully deleted all files in " + fileName);
+        }
     }
 
     public Resource getFileAsResource(String fileName, int w, int h) throws IOException {

@@ -12,6 +12,7 @@ import ru.b1nd.namenode.domain.Node;
 import ru.b1nd.namenode.domain.Partition;
 import ru.b1nd.operations.OperationUtils;
 import ru.b1nd.operations.model.BinaryOperation;
+import ru.b1nd.operations.model.DeleteOperation;
 import ru.b1nd.operations.model.Message;
 import ru.b1nd.operations.model.NDVIOperation;
 import ru.b1nd.operations.model.UploadOperation;
@@ -78,6 +79,24 @@ public class OperationService {
         clusterFileService.registerFile(newFileName);
 
         nodes.forEach(n -> messageService.sendMessage(n, new Message<>(new NDVIOperation(fileName, newFileName))));
+    }
+
+    public void performDeleteOperation(String fileName) throws IOException {
+        var file = clusterFileService.getFile(fileName);
+        try {
+            var partitions = clusterFileService.getPartitions(file);
+            var nodes      = partitions.stream().map(Partition::getNode).collect(Collectors.toSet());
+
+            nodes.forEach(n -> sendDeleteMessage(n, fileName));
+
+            clusterFileService.deletePartitions(partitions);
+
+            logger.info("Successfully deleted " + partitions.size() + " " + file.getName() + " file partitions");
+        } catch (IOException e) {
+            logger.info("There is no " + file.getName() + " file partitions");
+        }
+        clusterFileService.deleteFile(file);
+        logger.info("File " + file.getName() + " successfully deleted from cluster file system");
     }
 
     public void performUploadOperation(String fileName, int partitionNum) throws Exception {
@@ -162,6 +181,11 @@ public class OperationService {
         } else {
             return res;
         }
+    }
+
+    private void sendDeleteMessage(Node to, String file) {
+        var op = new DeleteOperation(file);
+        messageService.sendMessage(to, new Message<>(op));
     }
 
     private void sendUploadMessage(Node to, Node from, String fileName, Pair<Integer, Integer> wh) {

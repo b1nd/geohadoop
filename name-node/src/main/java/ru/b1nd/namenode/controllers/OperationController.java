@@ -45,6 +45,19 @@ public class OperationController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/delete")
+    public @ResponseBody
+    ResponseEntity<?> deleteOperation(@RequestParam("file") String file) {
+        try {
+            operationService.performDeleteOperation(file);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
+        }
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/add")
     public @ResponseBody
     ResponseEntity<?> addOperation(@RequestParam String left, @RequestParam String right, @RequestParam String file) {
