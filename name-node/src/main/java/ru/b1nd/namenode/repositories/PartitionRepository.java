@@ -14,4 +14,6 @@ public interface PartitionRepository extends CrudRepository<Partition, Long> {
     List<Partition> findAllByFileAndWAndH(File file, Integer w, Integer h);
 
     List<Partition> findAllByFile(File file);
+
+    List<Partition> findAllByNode(Node node);
 }

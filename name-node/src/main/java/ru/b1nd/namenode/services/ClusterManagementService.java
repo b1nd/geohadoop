@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import ru.b1nd.namenode.domain.Node;
 import ru.b1nd.namenode.repositories.NodeRepository;
+import ru.b1nd.namenode.repositories.PartitionRepository;
 
 import java.util.List;
 
@@ -20,12 +21,14 @@ public class ClusterManagementService {
 
     private final RestTemplate restTemplate;
     private final NodeRepository nodeRepository;
+    private final PartitionRepository partitionRepository;
     private final RabbitService rabbitService;
 
     @Autowired
-    public ClusterManagementService(RestTemplate restTemplate, NodeRepository nodeRepository, RabbitService rabbitService) {
+    public ClusterManagementService(RestTemplate restTemplate, NodeRepository nodeRepository, PartitionRepository partitionRepository, RabbitService rabbitService) {
         this.restTemplate = restTemplate;
         this.nodeRepository = nodeRepository;
+        this.partitionRepository = partitionRepository;
         this.rabbitService = rabbitService;
     }
 
@@ -48,6 +51,8 @@ public class ClusterManagementService {
         if (node == null) {
             return false;
         } else {
+            var partitions = partitionRepository.findAllByNode(node);
+            partitionRepository.deleteAll(partitions);
             rabbitService.deleteNodeQueue(node);
             nodeRepository.delete(node);
 
