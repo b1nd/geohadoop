@@ -25,7 +25,7 @@ constructor(private val fileSystemService: FileSystemService) {
     private val logger = LoggerFactory.getLogger(OperationService::class.java)
 
     fun doUploadOperation(op: UploadOperation) {
-        fileSystemService.requestAndSaveFile(op.from, op.file, op.w, op.h)
+        fileSystemService.requestAndSaveAndRegisterFile(op.from, op.file, op.w, op.h)
     }
 
     fun doDeleteOperation(op: DeleteOperation) {

@@ -11,6 +11,7 @@ import ru.b1nd.namenode.domain.Node;
 import ru.b1nd.namenode.services.ClusterManagementService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/api/cluster")
@@ -55,7 +56,7 @@ public class ClusterManagementController {
 
     @GetMapping("/all")
     public @ResponseBody
-    List<Node> getNodes() {
-        return clusterManagementService.getNodes();
+    List<String> getNodes() {
+        return clusterManagementService.getNodes().stream().map(Node::toString).collect(Collectors.toList());
     }
 }

@@ -5,17 +5,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import ru.b1nd.namenode.services.ClusterFileService;
 
+import java.util.List;
+
 @Controller
-@RequestMapping("/cluster/partition")
+@RequestMapping("/api/cluster/file")
 public class ClusterFileController {
 
-    private final Logger logger = LoggerFactory.getLogger(ClusterFileController.class);
+    private final Logger logger = LoggerFactory.getLogger(ClusterManagementController.class);
 
     private final ClusterFileService clusterFileService;
 
@@ -24,17 +23,16 @@ public class ClusterFileController {
         this.clusterFileService = clusterFileService;
     }
 
-    @PostMapping("/add")
+    @GetMapping("/all")
     public @ResponseBody
-    ResponseEntity<?> addPartition(@RequestParam String node, @RequestParam String file, @RequestParam Integer w, @RequestParam Integer h) {
-        clusterFileService.updatePartition(node, file, w, h, ClusterFileService.AlterType.ADD);
-        return ResponseEntity.ok().build();
+    List<String> getFiles() {
+        return clusterFileService.getFileNames();
     }
 
-    @PostMapping("/del")
+    @GetMapping("/download")
     public @ResponseBody
-    ResponseEntity<?> delPartition(@RequestParam String node, @RequestParam String file, @RequestParam Integer w, @RequestParam Integer h) {
-        clusterFileService.updatePartition(node, file, w, h, ClusterFileService.AlterType.DELETE);
-        return ResponseEntity.ok().build();
+    ResponseEntity<?> downloadFileFromCluster(@RequestParam("file") String file) {
+        clusterFileService.downloadFile(file);
+        return ResponseEntity.ok().body("File " + file + " will be downloaded from cluster");
     }
 }

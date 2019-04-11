@@ -16,4 +16,12 @@ public class Converter {
         }
         return Pair.of(matcher.group(1), matcher.group(2));
     }
+
+    public static Pair<Integer, Integer> getWH(String name) {
+        var matcher = Pattern.compile("w(\\d+)h(\\d+)\\.tif{1,2}$").matcher(name);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Cannot get w and h from " + name);
+        }
+        return Pair.of(Integer.parseInt(matcher.group(1)), Integer.parseInt(matcher.group(2)));
+    }
 }

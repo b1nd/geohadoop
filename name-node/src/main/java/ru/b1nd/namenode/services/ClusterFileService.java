@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.b1nd.filesystem.services.FileSystemService;
 import ru.b1nd.namenode.domain.File;
 import ru.b1nd.namenode.domain.Partition;
 import ru.b1nd.namenode.repositories.FileRepository;
@@ -13,19 +14,23 @@ import ru.b1nd.namenode.repositories.PartitionRepository;
 import ru.b1nd.namenode.utils.Converter;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ClusterFileService {
 
     private final Logger logger = LoggerFactory.getLogger(ClusterFileService.class);
 
+    private final FileSystemService fileSystemService;
     private final NodeRepository nodeRepository;
     private final FileRepository fileRepository;
     private final PartitionRepository partitionRepository;
 
     @Autowired
-    public ClusterFileService(NodeRepository nodeRepository, FileRepository fileRepository, PartitionRepository partitionRepository) {
+    public ClusterFileService(FileSystemService fileSystemService, NodeRepository nodeRepository, FileRepository fileRepository, PartitionRepository partitionRepository) {
+        this.fileSystemService = fileSystemService;
         this.nodeRepository = nodeRepository;
         this.fileRepository = fileRepository;
         this.partitionRepository = partitionRepository;
@@ -93,6 +98,23 @@ public class ClusterFileService {
         } else {
             return partitions;
         }
+    }
+
+    public List<String> getFileNames() {
+        return Lists.newArrayList(fileRepository.findAll()).stream().map(File::getName).collect(Collectors.toList());
+    }
+
+    public void downloadFile(String fileName) {
+        var file = fileRepository.findFileByName(fileName);
+        var partitions = new HashSet<>(partitionRepository.findAllByFile(file));
+
+        new Thread(() -> partitions.forEach(p -> {
+            try {
+                fileSystemService.requestAndSaveFile(p.getNode().toString(), p.getFile().getName(), p.getW(), p.getH());
+            } catch (IOException e) {
+                logger.error(e.getMessage(), e);
+            }
+        })).start();
     }
 
     public void deletePartitions(Iterable<Partition> partitions) {

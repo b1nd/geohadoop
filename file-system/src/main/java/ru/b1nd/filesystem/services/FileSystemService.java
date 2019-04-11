@@ -60,7 +60,7 @@ public class FileSystemService {
         }
     }
 
-    public void requestAndSaveFile(String from, String file, int w, int h) {
+    public void requestAndSaveFile(String from, String file, int w, int h) throws IOException {
         String fullName = file + partName(w, h);
         ResponseEntity<Resource> entity = null;
         try {
@@ -78,15 +78,19 @@ public class FileSystemService {
             logger.debug("New file " + file + " in file system");
         }
         var resource = entity.getBody();
-        try {
-            var buffer = ByteBuffer.allocate((int) resource.contentLength());
-            resource.readableChannel().read(buffer);
-            Files.write(new File(filePath + "/" + partName(w, h)).toPath(), buffer.array());
-            logger.info("File " + fullName + " saved");
 
+        var buffer = ByteBuffer.allocate((int) resource.contentLength());
+        resource.readableChannel().read(buffer);
+        Files.write(new File(filePath + "/" + partName(w, h)).toPath(), buffer.array());
+        logger.info("File " + fullName + " saved");
+    }
+
+    public void requestAndSaveAndRegisterFile(String from, String file, int w, int h) {
+        try {
+            requestAndSaveFile(from, file, w, h);
             registerPartition(file, w, h);
         } catch (IOException e) {
-            logger.error("Cannot save file " + fullName, e);
+            logger.error("Cannot save file " + file, e);
         }
     }
 

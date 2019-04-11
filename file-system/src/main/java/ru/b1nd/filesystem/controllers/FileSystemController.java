@@ -32,7 +32,7 @@ public class FileSystemController {
     @PostMapping("/{from:.+}")
     public @ResponseBody
     ResponseEntity<?> uploadFile(@PathVariable String from, @RequestParam String file, @RequestParam Integer w, @RequestParam Integer h) {
-        fileSystemService.requestAndSaveFile(from, file, w, h);
+        fileSystemService.requestAndSaveAndRegisterFile(from, file, w, h);
         return ResponseEntity.ok().body("File " + file + partName(w, h) + " successfully uploaded from " + from);
     }
 
