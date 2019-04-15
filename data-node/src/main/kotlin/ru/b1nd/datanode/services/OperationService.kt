@@ -32,9 +32,7 @@ constructor(private val fileSystemService: FileSystemService) {
         fileSystemService.deleteFile(op.file)
     }
 
-    fun doBinaryOperation(op: BinaryOperation, opClass: Class<*>) {
-        val opName = OperationUtils.getNameByType(opClass)
-
+    fun doBinaryOperation(op: BinaryOperation, opName: String) {
         val w = op.w!!
         val h = op.h!!
 
