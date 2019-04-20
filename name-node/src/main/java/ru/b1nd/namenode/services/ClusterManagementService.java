@@ -51,12 +51,7 @@ public class ClusterManagementService {
         if (node == null) {
             return false;
         } else {
-            var partitions = partitionRepository.findAllByNode(node);
-            partitionRepository.deleteAll(partitions);
-            rabbitService.deleteNodeQueue(node);
-            nodeRepository.delete(node);
-
-            logger.info(node + " deleted");
+            deleteNode(node);
             return true;
         }
     }
@@ -64,7 +59,7 @@ public class ClusterManagementService {
     public void synchronizeNodes() {
         nodeRepository.findAll().forEach(n -> {
             if (!checkHeartbeat(n)) {
-                nodeRepository.delete(n);
+                deleteNode(n);
             }
         });
     }
@@ -72,6 +67,15 @@ public class ClusterManagementService {
     public List<Node> getNodes() {
         synchronizeNodes();
         return Lists.newArrayList(nodeRepository.findAll());
+    }
+
+    private void deleteNode(Node node) {
+        var partitions = partitionRepository.findAllByNode(node);
+        partitionRepository.deleteAll(partitions);
+        rabbitService.deleteNodeQueue(node);
+        nodeRepository.delete(node);
+
+        logger.info(node + " deleted");
     }
 
     private boolean checkHeartbeat(Node node) {
