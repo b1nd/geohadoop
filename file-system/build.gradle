@@ -14,7 +14,7 @@ apply plugin: 'io.spring.dependency-management'
 apply plugin: 'java'
 
 group 'ru.b1nd'
-version '1.0.0'
+version '1.0.1'
 
 sourceCompatibility = 11
 
