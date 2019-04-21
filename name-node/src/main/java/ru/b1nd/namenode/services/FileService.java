@@ -114,11 +114,12 @@ public class FileService {
     }
 
     public Resource getFileAsResource(String fileName) throws IOException {
-        Optional<File> file = Files.list(new File(outputDir).toPath())
-                .map(Path::toFile)
-                .filter(f -> getFileNameWithoutExtension(f.getName()).equalsIgnoreCase(getFileNameWithoutExtension(fileName)))
-                .findFirst();
-
+        Optional<File> file;
+        try (var files = Files.list(new File(outputDir).toPath())) {
+            file = files.map(Path::toFile)
+                    .filter(f -> getFileNameWithoutExtension(f.getName()).equalsIgnoreCase(getFileNameWithoutExtension(fileName)))
+                    .findFirst();
+        }
         if (file.isPresent()) {
             return new UrlResource(file.get().toURI());
         } else {
@@ -128,9 +129,9 @@ public class FileService {
     }
 
     public List<String> getOutputFileNames() throws IOException {
-        return Files.list(new File(outputDir).toPath())
-                .map(f -> f.toFile().getName())
-                .collect(Collectors.toList());
+        try (var files = Files.list(new File(outputDir).toPath())) {
+            return files.map(f -> f.toFile().getName()).collect(Collectors.toList());
+        }
     }
 
     public void mergeTifFile(String fileName, int imageType) throws IOException {

@@ -95,24 +95,26 @@ public class FileSystemService {
     }
 
     public List<String> getFileNames() throws IOException {
-        return Files.list(new File(uploadDir).toPath())
-                .filter(Files::isDirectory)
-                .map(f -> f.toFile().getName())
-                .collect(Collectors.toList());
+        try (var files = Files.list(new File(uploadDir).toPath())) {
+            return files.filter(Files::isDirectory)
+                    .map(f -> f.toFile().getName())
+                    .collect(Collectors.toList());
+        }
     }
 
     public List<File> getFilePartitions(String fileName) throws IOException {
-        return Files.list(new File(uploadDir + fileName).toPath())
-                .map(Path::toFile)
-                .collect(Collectors.toList());
+        try (var files = Files.list(new File(uploadDir + fileName).toPath())) {
+            return files.map(Path::toFile).collect(Collectors.toList());
+        }
     }
 
     public File getFilePartition(String fileName, int w, int h) throws IOException {
-        return Files.list(new File(uploadDir + fileName).toPath())
-                .map(Path::toFile)
-                .filter(p -> checkFilePartName(p.getName(), w, h))
-                .findFirst()
-                .orElseThrow(() -> new IOException("Cannot find partition " + fileName + " w=" + w + " h=" + h));
+        try (var files = Files.list(new File(uploadDir + fileName).toPath())) {
+            return files.map(Path::toFile)
+                    .filter(p -> checkFilePartName(p.getName(), w, h))
+                    .findFirst()
+                    .orElseThrow(() -> new IOException("Cannot find partition " + fileName + " w=" + w + " h=" + h));
+        }
     }
 
     public File createNewPartition(String fileName, int w, int h) {
@@ -130,15 +132,14 @@ public class FileSystemService {
     }
 
     public Resource getFileAsResource(String fileName, int w, int h) throws IOException {
-        Optional<Path> dirPath = Files.list(new File(uploadDir).toPath())
-                .filter(p -> p.toFile().getName().equals(fileName))
-                .findFirst();
+        Optional<Path> dirPath = tryToGetPathFromFileName(fileName);
         if (dirPath.isEmpty()) {
             throw new FileNotFoundException("Cannot find file " + fileName);
         } else {
-            Optional<Path> filePath = Files.list(dirPath.get())
-                    .filter(p -> checkFilePartName(p.toFile().getName(), w, h))
-                    .findFirst();
+            Optional<Path> filePath;
+            try (var files = Files.list(dirPath.get())) {
+                filePath = files.filter(p -> checkFilePartName(p.toFile().getName(), w, h)).findFirst();
+            }
             if (filePath.isEmpty()) {
                 throw new FileNotFoundException("Cannot find file " + fileName + " with w = " + w + " and h = " + h);
             } else {
@@ -148,16 +149,15 @@ public class FileSystemService {
     }
 
     public List<Resource> getFileAsResources(String fileName) throws IOException {
-        Optional<Path> path = Files.list(new File(uploadDir).toPath())
-                .filter(p -> p.toFile().getName().equals(fileName))
-                .findFirst();
+        Optional<Path> path = tryToGetPathFromFileName(fileName);
         if (path.isEmpty()) {
             throw new FileNotFoundException("Cannot find file " + fileName);
         } else {
-            return Files.list(path.get())
-                    .map(this::getUrlResourceByPath)
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
+            try (var files = Files.list(path.get())) {
+                return files.map(this::getUrlResourceByPath)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+            }
         }
     }
 
@@ -169,6 +169,12 @@ public class FileSystemService {
             logger.info("Partition " + partition + " registered");
         } else {
             logger.error("Partition " + partition + " was not registered");
+        }
+    }
+
+    private Optional<Path> tryToGetPathFromFileName(String fileName) throws IOException {
+        try (var files = Files.list(new File(uploadDir).toPath())) {
+            return files.filter(p -> p.toFile().getName().equals(fileName)).findFirst();
         }
     }
 
